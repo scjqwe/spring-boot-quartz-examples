@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/quartz?useUnicode=true&characterEncoding=UTF-8
+    username: root
+    password: suncj3690
+    driver-class-name: com.mysql.jdbc.Driver
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: mapper/*.xml
+  type-aliases-package: com.quartz.entity
