@@ -3,8 +3,6 @@ package com.quartz.config;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.sql.DataSource;
-
 import org.quartz.ee.servlet.QuartzInitializerListener;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.context.annotation.Bean;
@@ -16,10 +14,10 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 public class SchedulerConfig {
 
 	@Bean(name = "SchedulerFactory")
-	public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource) throws IOException {
+	public SchedulerFactoryBean schedulerFactoryBean() throws IOException {
 		SchedulerFactoryBean factory = new SchedulerFactoryBean();
+		factory.setOverwriteExistingJobs(true);
 		factory.setQuartzProperties(quartzProperties());
-		factory.setDataSource(dataSource);
 		return factory;
 	}
 
