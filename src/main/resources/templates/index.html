@@ -26,42 +26,35 @@
 	<table class="layui-table" id="jobList" lay-filter="jobList"></table>
 
 	<!-- 新增任务 -->
-	<form class="layui-form" id="add-form" action="" style="display: none;">
+	<form class="layui-form" id="add-form" action="/job/add" method="Post"
+		style="display: none;">
 		<div class="layui-form-item" style="margin-top: 5px">
-			<label class="layui-form-label">输入框</label>
+			<label class="layui-form-label">任务类名</label>
 			<div class="layui-input-block">
-				<input type="text" name="task Name" required style="width: 240px"
-					lay-verify="required" placeholder="请输入标题" autocomplete="off"
+				<input type="text" name="jobClassName" required style="width: 240px"
+					lay-verify="required" placeholder="请输入任务类名" autocomplete="off"
 					class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">密码框</label>
+			<label class="layui-form-label">任务组</label>
 			<div class="layui-input-inline">
-				<input type="password" name="password" required style="width: 240px"
-					lay-verify="required" placeholder="请输入密码" autocomplete="off"
+				<input type="text" name="jobGroupName" required style="width: 240px"
+					lay-verify="required" placeholder="任务组" autocomplete="off"
 					class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
-			<label class="layui-form-label">密码框</label>
+			<label class="layui-form-label">Cron表达式</label>
 			<div class="layui-input-inline">
-				<input type="password" name="password" required style="width: 240px"
-					lay-verify="required" placeholder="请输入密码" autocomplete="off"
-					class="layui-input">
-			</div>
-		</div>
-		<div class="layui-form-item">
-			<label class="layui-form-label">密码框</label>
-			<div class="layui-input-inline">
-				<input type="password" name="password" required style="width: 240px"
-					lay-verify="required" placeholder="请输入密码" autocomplete="off"
+				<input type="text" name="cronExpression" required style="width: 240px"
+					lay-verify="required" placeholder="Cron表达式" autocomplete="off"
 					class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
 			<div class="layui-input-block">
-				<button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+				<button class="layui-btn" lay-submit lay-filter="*">立即提交</button>
 				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
 			</div>
 		</div>
@@ -221,7 +214,7 @@
 				title : "新建任务",
 				shadeClose : true,
 				shift : 2,
-				area : [ '400px', '500px' ],
+				area : [ '400px', '300px' ],
 				content : $("#add-form"),
 				success : function(index, layero) {
 				}
