@@ -99,39 +99,36 @@
 					type : 'checkbox',
 					fixed : 'left'
 				}, {
-					field : 'id',
-					title : 'ID'
-				}, {
-					field : 'job_NAME',
+					field : 'jobName',
 					title : '任务名称',
 					edit : 'text',
 					align : 'center'
 				}, {
-					field : 'job_GROUP',
+					field : 'jobGroup',
 					title : '任务所在组',
 					edit : 'text',
 					align : 'center'
 				}, {
-					field : 'job_CLASS_NAME',
+					field : 'jobClassName',
 					title : '任务类名',
 					edit : 'text'
 				}, {
-					field : 'trigger_NAME',
+					field : 'triggerName',
 					title : '触发器名称',
 					edit : 'text',
 					align : 'center'
 				}, {
-					field : 'trigger_GROUP',
+					field : 'triggerGroup',
 					title : '触发器所在组',
 					edit : 'text',
 					align : 'center'
 				}, {
-					field : 'cron_EXPRESSION',
+					field : 'cronExpression',
 					title : '表达式',
 					edit : 'text',
 					align : 'center'
 				}, {
-					field : 'time_ZONE_ID',
+					field : 'timeZoneId',
 					title : '时区',
 					edit : 'text',
 					align : 'center'
@@ -224,7 +221,7 @@
 				title : "新建任务",
 				shadeClose : true,
 				shift : 2,
-				area : [ '400px', '300px' ],
+				area : [ '400px', '500px' ],
 				content : $("#add-form"),
 				success : function(index, layero) {
 				}

@@ -2,10 +2,11 @@ spring:
   mvc:
     static-path-pattern: /**
   datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/quartz?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: suncj3690
-    driver-class-name: com.mysql.jdbc.Driver
   thymeleaf:
     cache: false
     encoding: utf-8
@@ -15,5 +16,10 @@ spring:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
-  mapper-locations: mapper/*.xml
-  type-aliases-package: com.quartz.entity
+  mapper-locations: mapper/**/*Mapper.xml
+  type-aliases-package: com.quartz.entity.JobAndTrigger
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql

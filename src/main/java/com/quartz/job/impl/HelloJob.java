@@ -17,7 +17,7 @@ public class HelloJob implements BaseJob{
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
-		logger.info("当前任务执行时间:{}", new Date());
+		logger.info("当前任务执行时间:{}, {}", new Date(), "sayHello");
 	}
 
 }

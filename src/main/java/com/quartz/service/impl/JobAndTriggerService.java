@@ -20,11 +20,11 @@ import com.quartz.service.IJobAndTriggerService;
  * 创建日期：2019年3月24日<br>
  */
 @Service
-public class JobAndTriggerService implements IJobAndTriggerService{
+public class JobAndTriggerService implements IJobAndTriggerService {
 
 	@Autowired
 	private JobAndTriggerMapper jobAndTriggerMapper;
-	
+
 	@Override
 	public PageInfo<JobAndTrigger> getJobAndTriggerDetails(int pageNum, int pageSize) {
 		PageHelper.startPage(pageNum, pageSize);

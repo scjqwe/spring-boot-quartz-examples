@@ -1,8 +1,8 @@
 package com.quartz.controller;
 
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.quartz.CronScheduleBuilder;
@@ -17,7 +17,10 @@ import org.quartz.TriggerKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,6 +49,12 @@ public class JobController {
 
 	@Autowired
 	private Scheduler scheduler;
+
+	@InitBinder
+	protected void initBinder(WebDataBinder binder) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+	}
 
 	@PostMapping(value = "/add")
 	public void addJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName,
@@ -120,13 +129,13 @@ public class JobController {
 	@RequestMapping(value = "/list")
 	public Map<String, Object> listJob(@RequestParam(value = "page") Integer page, @RequestParam(value = "limit") Integer limit) {
 		PageInfo<JobAndTrigger> pageInfo = iJobAndTriggerService.getJobAndTriggerDetails(page, limit);
-		List<JobAndTrigger> list = new ArrayList<JobAndTrigger>();
-		JobAndTrigger job1 = new JobAndTrigger();
-		job1.setJOB_NAME("test-1");
-		list.add(job1);
-		pageInfo.setList(list);
-		pageInfo.setTotal(1);
-		
+		// List<JobAndTrigger> list = new ArrayList<JobAndTrigger>();
+		// JobAndTrigger job1 = new JobAndTrigger();
+		// job1.setJOB_NAME("test-1");
+		// list.add(job1);
+		// pageInfo.setList(list);
+		// pageInfo.setTotal(1);
+
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("data", pageInfo.getList());
 		data.put("count", pageInfo.getTotal());
