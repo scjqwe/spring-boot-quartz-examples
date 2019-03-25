@@ -1,6 +1,8 @@
 package com.quartz.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.quartz.CronScheduleBuilder;
@@ -28,7 +30,7 @@ import com.quartz.service.IJobAndTriggerService;
 
 /**
  * 
- * 任务控制器<br>
+ * 任务调度控制器<br>
  * 版权：Copyright (c) 2016-2019<br>
  * 作者：孙常军<br>
  * 版本：1.0<br>
@@ -45,8 +47,8 @@ public class JobController {
 	@Autowired
 	private Scheduler scheduler;
 
-	@PostMapping(value = "/addjob")
-	public void addjob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName,
+	@PostMapping(value = "/add")
+	public void addJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName,
 			@RequestParam(value = "cronExpression") String cronExpression) throws Exception {
 
 		// 启动调度器
@@ -68,24 +70,24 @@ public class JobController {
 		}
 	}
 
-	@PostMapping(value = "/pausejob")
-	public void pausejob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
+	@PostMapping(value = "/pause")
+	public void pauseJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
 		scheduler.pauseJob(JobKey.jobKey(jobClassName, jobGroupName));
 	}
 
-	@PostMapping(value = "/resumejob")
+	@PostMapping(value = "/resume")
 	public void resumejob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
 		scheduler.resumeJob(JobKey.jobKey(jobClassName, jobGroupName));
 	}
 
-	@PostMapping(value = "/reschedulejob")
+	@PostMapping(value = "/reschedule")
 	public void rescheduleJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName,
 			@RequestParam(value = "cronExpression") String cronExpression) throws Exception {
 		try {
 			TriggerKey triggerKey = TriggerKey.triggerKey(jobClassName, jobGroupName);
+
 			// 表达式调度构建器
 			CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExpression);
-
 			CronTrigger trigger = (CronTrigger) scheduler.getTrigger(triggerKey);
 
 			// 按新的cronExpression表达式重新构建trigger
@@ -98,24 +100,42 @@ public class JobController {
 		}
 	}
 
-	@PostMapping(value = "/deletejob")
-	public void deletejob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
+	@PostMapping(value = "/delete")
+	public void deleteJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
 		scheduler.pauseTrigger(TriggerKey.triggerKey(jobClassName, jobGroupName));
 		scheduler.unscheduleJob(TriggerKey.triggerKey(jobClassName, jobGroupName));
 		scheduler.deleteJob(JobKey.jobKey(jobClassName, jobGroupName));
 
 	}
 
-	@GetMapping(value = "/queryjob")
-	public Map<String, Object> queryjob(@RequestParam(value = "pageNum") Integer pageNum, @RequestParam(value = "pageSize") Integer pageSize) {
-		PageInfo<JobAndTrigger> jobAndTrigger = iJobAndTriggerService.getJobAndTriggerDetails(pageNum, pageSize);
+	@GetMapping(value = "/query")
+	public Map<String, Object> queryJob(@RequestParam(value = "page") Integer page, @RequestParam(value = "limit") Integer limit) {
+		PageInfo<JobAndTrigger> jobAndTrigger = iJobAndTriggerService.getJobAndTriggerDetails(page, limit);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("JobAndTrigger", jobAndTrigger);
 		map.put("number", jobAndTrigger.getTotal());
 		return map;
 	}
 
-	public static BaseJob getClass(String classname) throws Exception {
+	@RequestMapping(value = "/list")
+	public Map<String, Object> listJob(@RequestParam(value = "page") Integer page, @RequestParam(value = "limit") Integer limit) {
+		PageInfo<JobAndTrigger> pageInfo = iJobAndTriggerService.getJobAndTriggerDetails(page, limit);
+		List<JobAndTrigger> list = new ArrayList<JobAndTrigger>();
+		JobAndTrigger job1 = new JobAndTrigger();
+		job1.setJOB_NAME("test-1");
+		list.add(job1);
+		pageInfo.setList(list);
+		pageInfo.setTotal(1);
+		
+		Map<String, Object> data = new HashMap<String, Object>();
+		data.put("data", pageInfo.getList());
+		data.put("count", pageInfo.getTotal());
+		data.put("code", 200);
+		data.put("msg", "");
+		return data;
+	}
+
+	private BaseJob getClass(String classname) throws Exception {
 		Class<?> class1 = Class.forName(classname);
 		return (BaseJob) class1.newInstance();
 	}

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>任务列表</title>
+<link th:href="@{/layui/css/layui.css}" rel="stylesheet" media="all" />
+</head>
+<body>
+	<!-- 搜索栏 -->
+	<div class="searchBar" style="margin: 10px 0 0 10px">
+		任务名：
+		<div class="layui-inline">
+			<input class="layui-input" name="taskName" id="taskName"
+				autocomplete="on">
+		</div>
+		触发器名：
+		<div class="layui-inline">
+			<input class="layui-input" name="triggerName" id="triggerName"
+				autocomplete="on">
+		</div>
+		<button class="layui-btn" data-type="reload">搜索</button>
+	</div>
+
+	<table class="layui-table" id="jobList" lay-filter="jobList"></table>
+
+	<!-- 新增任务 -->
+	<form class="layui-form" id="add-form" action="" style="display: none;">
+		<div class="layui-form-item" style="margin-top: 5px">
+			<label class="layui-form-label">输入框</label>
+			<div class="layui-input-block">
+				<input type="text" name="task Name" required style="width: 240px"
+					lay-verify="required" placeholder="请输入标题" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">密码框</label>
+			<div class="layui-input-inline">
+				<input type="password" name="password" required style="width: 240px"
+					lay-verify="required" placeholder="请输入密码" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">密码框</label>
+			<div class="layui-input-inline">
+				<input type="password" name="password" required style="width: 240px"
+					lay-verify="required" placeholder="请输入密码" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">密码框</label>
+			<div class="layui-input-inline">
+				<input type="password" name="password" required style="width: 240px"
+					lay-verify="required" placeholder="请输入密码" autocomplete="off"
+					class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+				<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+			</div>
+		</div>
+	</form>
+
+	<!-- 头部工具栏 -->
+	<script type="text/html" id="toolbar">
+		<div class="layui-btn-container">
+			<button class="layui-btn layui-btn-sm" lay-event="add">新增任务</button>
+			<button class="layui-btn layui-btn-sm" lay-event="batchDel">批量删除</button>
+		</div>
+	</script>
+
+	<!-- 操作工具栏 -->
+	<script type="text/html" id="operation">
+		<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="pause">暂停</a>
+		<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="resume">恢复</a>
+		<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="reschedule">修改</a>
+		<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</a>
+	</script>
+
+	<script th:src="@{/layui/layui.js}"></script>
+	<script th:src="@{/js/jquery.min.js}"></script>
+	<script>
+		layui.use('table', function() {
+			var table = layui.table;
+			table.render({
+				id : 'reload',
+				elem : '#jobList',
+				url : '/job/list',
+				toolbar : '#toolbar',
+				cellMinWidth : 80, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+				title : '任务列表',
+				cols : [ [ {
+					type : 'checkbox',
+					fixed : 'left'
+				}, {
+					field : 'id',
+					title : 'ID'
+				}, {
+					field : 'job_NAME',
+					title : '任务名称',
+					edit : 'text',
+					align : 'center'
+				}, {
+					field : 'job_GROUP',
+					title : '任务所在组',
+					edit : 'text',
+					align : 'center'
+				}, {
+					field : 'job_CLASS_NAME',
+					title : '任务类名',
+					edit : 'text'
+				}, {
+					field : 'trigger_NAME',
+					title : '触发器名称',
+					edit : 'text',
+					align : 'center'
+				}, {
+					field : 'trigger_GROUP',
+					title : '触发器所在组',
+					edit : 'text',
+					align : 'center'
+				}, {
+					field : 'cron_EXPRESSION',
+					title : '表达式',
+					edit : 'text',
+					align : 'center'
+				}, {
+					field : 'time_ZONE_ID',
+					title : '时区',
+					edit : 'text',
+					align : 'center'
+				}, {
+					title : '操作',
+					toolbar : '#operation',
+					width : 300,
+					align : 'center'
+				} ] ],
+				page : true,
+				response : {
+					statusCode : 200
+				}
+			});
+
+			//头工具栏事件
+			table.on('toolbar(jobList)', function(obj) {
+				console.log(obj)
+				var checkStatus = table.checkStatus(obj.config.id);
+				switch (obj.event) {
+				case 'add':
+					addJob();
+					break;
+				case 'batchDel':
+					var data = checkStatus.data;
+					layer.msg('选中了：' + data.length + ' 个');
+					break;
+				}
+				;
+			});
+
+			//监听行工具事件
+			table.on('tool(jobList)', function(obj) {
+				console.log(obj)
+				var data = obj.data;
+				if (obj.event === 'pause') {
+					layer.confirm('确定暂停任务吗？', function(index) {
+						obj.update({});
+						layer.close(index);
+					});
+				} else if (obj.event === 'resume') {
+					layer.confirm('确定恢复任务吗？', function(index) {
+						obj.update({});
+						layer.close(index);
+					});
+				} else if (obj.event === 'reschedule') {
+					layer.prompt({
+						formType : 2,
+						value : data.email
+					}, function(value, index) {
+						obj.update({});
+						layer.close(index);
+					});
+				} else if (obj.event === 'delete') {
+					layer.confirm('确定删除任务吗？', function(index) {
+						obj.del();
+						layer.close(index);
+					});
+				}
+			});
+
+			//搜索事件
+			var $ = layui.$, active = {
+				reload : function() {
+					var taskName = $('#taskName');
+
+					//执行重载
+					table.reload('reload', {
+						page : {
+							curr : 1
+						//重新从第 1 页开始
+						},
+						where : {
+							key : {
+								taskName : taskName.val()
+							}
+						}
+					});
+				}
+			};
+			$('.searchBar .layui-btn').on('click', function() {
+				var type = $(this).data('type');
+				active[type] ? active[type].call(this) : '';
+			});
+		});
+
+		function addJob() {
+			layer.open({
+				type : 1,
+				title : "新建任务",
+				shadeClose : true,
+				shift : 2,
+				area : [ '400px', '300px' ],
+				content : $("#add-form"),
+				success : function(index, layero) {
+				}
+			});
+		}
+	</script>
+</body>
+</html>

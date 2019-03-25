@@ -1,9 +1,17 @@
 spring:
+  mvc:
+    static-path-pattern: /**
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/quartz?useUnicode=true&characterEncoding=UTF-8
     username: root
     password: suncj3690
     driver-class-name: com.mysql.jdbc.Driver
+  thymeleaf:
+    cache: false
+    encoding: utf-8
+    mode: HTML
+    prefix: classpath:/templates/
+    suffix: .html
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
