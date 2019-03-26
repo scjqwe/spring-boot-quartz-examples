@@ -26,9 +26,9 @@ public class JobAndTriggerService implements IJobAndTriggerService {
 	private JobAndTriggerMapper jobAndTriggerMapper;
 
 	@Override
-	public PageInfo<JobAndTrigger> getJobAndTriggerDetails(int pageNum, int pageSize) {
+	public PageInfo<JobAndTrigger> getJobAndTriggerDetails(int pageNum, int pageSize, String jobClassName, String jobGroupName) {
 		PageHelper.startPage(pageNum, pageSize);
-		List<JobAndTrigger> list = jobAndTriggerMapper.getJobAndTriggerDetails();
+		List<JobAndTrigger> list = jobAndTriggerMapper.getJobAndTriggerDetails(jobClassName, jobGroupName);
 		PageInfo<JobAndTrigger> page = new PageInfo<JobAndTrigger>(list);
 		return page;
 	}

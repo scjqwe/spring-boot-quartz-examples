@@ -2,6 +2,8 @@ package com.quartz.dao;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import com.quartz.entity.JobAndTrigger;
 
 /**
@@ -14,6 +16,6 @@ import com.quartz.entity.JobAndTrigger;
  */
 public interface JobAndTriggerMapper {
 
-	public List<JobAndTrigger> getJobAndTriggerDetails();
+	public List<JobAndTrigger> getJobAndTriggerDetails(@Param("jobClassName") String jobClassName, @Param("jobGroupName") String jobGroupName);
 
 }

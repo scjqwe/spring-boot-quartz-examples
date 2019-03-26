@@ -26,7 +26,7 @@ public class JobAndTriggerMapperTest {
 
 	@Test
 	public void test1() throws Exception {
-		logger.info("{}", mapper.getJobAndTriggerDetails());
+		logger.info("{}", mapper.getJobAndTriggerDetails(null, null));
 	}
 
 }

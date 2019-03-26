@@ -3,21 +3,29 @@
 <mapper namespace="com.quartz.dao.JobAndTriggerMapper">
 	<select id="getJobAndTriggerDetails" resultType="com.quartz.entity.JobAndTrigger">
 		SELECT
-		qrtz_job_details.JOB_NAME,
-		qrtz_job_details.JOB_GROUP,
-		qrtz_job_details.JOB_CLASS_NAME,
-		qrtz_triggers.TRIGGER_NAME,
-		qrtz_triggers.TRIGGER_GROUP,
-		qrtz_cron_triggers.CRON_EXPRESSION,
-		qrtz_cron_triggers.TIME_ZONE_ID
+			t1.JOB_NAME,
+			t1.JOB_GROUP,
+			t1.JOB_CLASS_NAME,
+			t2.TRIGGER_NAME,
+			t2.TRIGGER_GROUP,
+			t2.TRIGGER_STATE,
+			t3.CRON_EXPRESSION,
+			t3.TIME_ZONE_ID
 		FROM
-		qrtz_job_details
-		JOIN qrtz_triggers
-		JOIN qrtz_cron_triggers ON
-		qrtz_job_details.JOB_NAME = qrtz_triggers.JOB_NAME
-		AND qrtz_triggers.TRIGGER_NAME = qrtz_cron_triggers.TRIGGER_NAME
-		AND qrtz_triggers.TRIGGER_GROUP =
-		qrtz_cron_triggers.TRIGGER_GROUP
+			qrtz_job_details t1,
+			qrtz_triggers t2,
+			qrtz_cron_triggers t3
+		WHERE
+			t1.JOB_NAME = t2.JOB_NAME
+		AND t1.JOB_GROUP = t2.JOB_GROUP
+		AND t2.TRIGGER_NAME = t3.TRIGGER_NAME
+		AND t2.TRIGGER_GROUP = t3.TRIGGER_GROUP
+		<if test="jobClassName != null and jobClassName != ''">
+			AND t1.JOB_NAME =#{jobClassName, jdbcType=VARCHAR}
+		</if>
+		<if test="jobGroupName != null and jobGroupName != ''">
+			AND t1.JOB_GROUP =#{jobGroupName, jdbcType=VARCHAR}
+		</if>
 	</select>
 
 </mapper>

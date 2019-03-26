@@ -2,7 +2,6 @@ package com.quartz.controller;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.quartz.CronScheduleBuilder;
@@ -18,18 +17,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.github.pagehelper.PageInfo;
 import com.quartz.entity.JobAndTrigger;
 import com.quartz.job.BaseJob;
 import com.quartz.service.IJobAndTriggerService;
+import com.quartz.util.ResultUtils;
 
 /**
  * 
@@ -39,7 +39,7 @@ import com.quartz.service.IJobAndTriggerService;
  * 版本：1.0<br>
  * 创建日期：2019年3月24日<br>
  */
-@RestController
+@Controller
 @RequestMapping("/job")
 public class JobController {
 	private static final Logger logger = LoggerFactory.getLogger(JobController.class);
@@ -57,7 +57,7 @@ public class JobController {
 	}
 
 	@PostMapping(value = "/add")
-	public void addJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName,
+	public String addJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName,
 			@RequestParam(value = "cronExpression") String cronExpression) throws Exception {
 
 		// 启动调度器
@@ -75,22 +75,40 @@ public class JobController {
 		try {
 			scheduler.scheduleJob(jobDetail, trigger);
 		} catch (SchedulerException e) {
-			logger.error("创建定时任务失败", e);
+			logger.error("Exception:", e);
 		}
+		
+		return "redirect:/index";
 	}
 
 	@PostMapping(value = "/pause")
-	public void pauseJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
-		scheduler.pauseJob(JobKey.jobKey(jobClassName, jobGroupName));
+	@ResponseBody
+	public Object pauseJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
+		try {
+			scheduler.pauseJob(JobKey.jobKey(jobClassName, jobGroupName));
+			return ResultUtils.getSuccessResult("操作成功");
+		} catch (Exception e) {
+			logger.error("Exception:", e);
+			return ResultUtils.getFailResult("抱歉，出现一点小故障");
+		}
+
 	}
 
 	@PostMapping(value = "/resume")
-	public void resumejob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
-		scheduler.resumeJob(JobKey.jobKey(jobClassName, jobGroupName));
+	@ResponseBody
+	public Object resumeJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
+		try {
+			scheduler.resumeJob(JobKey.jobKey(jobClassName, jobGroupName));
+			return ResultUtils.getSuccessResult("操作成功");
+		} catch (Exception e) {
+			logger.error("Exception:", e);
+			return ResultUtils.getFailResult("抱歉，出现一点小故障");
+		}
+
 	}
 
 	@PostMapping(value = "/reschedule")
-	public void rescheduleJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName,
+	public String rescheduleJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName,
 			@RequestParam(value = "cronExpression") String cronExpression) throws Exception {
 		try {
 			TriggerKey triggerKey = TriggerKey.triggerKey(jobClassName, jobGroupName);
@@ -105,43 +123,35 @@ public class JobController {
 			// 按新的trigger重新设置job执行
 			scheduler.rescheduleJob(triggerKey, trigger);
 		} catch (SchedulerException e) {
-			logger.error("更新定时任务失败", e);
+			logger.error("Exception:", e);
 		}
+		
+		return "redirect:/index";
 	}
 
 	@PostMapping(value = "/delete")
-	public void deleteJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
-		scheduler.pauseTrigger(TriggerKey.triggerKey(jobClassName, jobGroupName));
-		scheduler.unscheduleJob(TriggerKey.triggerKey(jobClassName, jobGroupName));
-		scheduler.deleteJob(JobKey.jobKey(jobClassName, jobGroupName));
+	@ResponseBody
+	public Object deleteJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName) throws Exception {
+		try {
+			scheduler.pauseTrigger(TriggerKey.triggerKey(jobClassName, jobGroupName));
+			scheduler.unscheduleJob(TriggerKey.triggerKey(jobClassName, jobGroupName));
+			scheduler.deleteJob(JobKey.jobKey(jobClassName, jobGroupName));
+			return ResultUtils.getSuccessResult("操作成功");
+		} catch (Exception e) {
+			logger.error("Exception:", e);
+			return ResultUtils.getFailResult("抱歉，出现一点小故障");
+		}
 
-	}
-
-	@GetMapping(value = "/query")
-	public Map<String, Object> queryJob(@RequestParam(value = "page") Integer page, @RequestParam(value = "limit") Integer limit) {
-		PageInfo<JobAndTrigger> jobAndTrigger = iJobAndTriggerService.getJobAndTriggerDetails(page, limit);
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("JobAndTrigger", jobAndTrigger);
-		map.put("number", jobAndTrigger.getTotal());
-		return map;
 	}
 
 	@RequestMapping(value = "/list")
-	public Map<String, Object> listJob(@RequestParam(value = "page") Integer page, @RequestParam(value = "limit") Integer limit) {
-		PageInfo<JobAndTrigger> pageInfo = iJobAndTriggerService.getJobAndTriggerDetails(page, limit);
-		// List<JobAndTrigger> list = new ArrayList<JobAndTrigger>();
-		// JobAndTrigger job1 = new JobAndTrigger();
-		// job1.setJOB_NAME("test-1");
-		// list.add(job1);
-		// pageInfo.setList(list);
-		// pageInfo.setTotal(1);
-
-		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("data", pageInfo.getList());
-		data.put("count", pageInfo.getTotal());
-		data.put("code", 200);
-		data.put("msg", "");
-		return data;
+	@ResponseBody
+	public Object listJob(@RequestParam(value = "page") Integer page, @RequestParam(value = "limit") Integer limit, String jobClassName, String jobGroupName) {
+		PageInfo<JobAndTrigger> pageInfo = iJobAndTriggerService.getJobAndTriggerDetails(page, limit, jobClassName, jobGroupName);
+		Map<String, Object> result = ResultUtils.getSuccessResult();
+		result.put("data", pageInfo.getList());
+		result.put("count", pageInfo.getTotal());
+		return result;
 	}
 
 	private BaseJob getClass(String classname) throws Exception {

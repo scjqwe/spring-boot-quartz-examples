@@ -21,6 +21,8 @@ public class JobAndTrigger {
 	private String triggerName;
 
 	private String triggerGroup;
+	
+	private String triggerState;
 
 	private BigInteger repeatInterval;
 
@@ -69,6 +71,14 @@ public class JobAndTrigger {
 	public void setTriggerGroup(String triggerGroup) {
 		this.triggerGroup = triggerGroup;
 	}
+	
+	public String getTriggerState() {
+		return triggerState;
+	}
+
+	public void setTriggerState(String triggerState) {
+		this.triggerState = triggerState;
+	}
 
 	public BigInteger getRepeatInterval() {
 		return repeatInterval;
@@ -105,8 +115,8 @@ public class JobAndTrigger {
 	@Override
 	public String toString() {
 		return "JobAndTrigger [jobName=" + jobName + ", jobGroup=" + jobGroup + ", jobClassName=" + jobClassName + ", triggerName=" + triggerName + ", triggerGroup="
-				+ triggerGroup + ", repeatInterval=" + repeatInterval + ", timesTriggered=" + timesTriggered + ", cronExpression=" + cronExpression + ", timeZoneId=" + timeZoneId
-				+ "]";
+				+ triggerGroup + ", triggerState=" + triggerState + ", repeatInterval=" + repeatInterval + ", timesTriggered=" + timesTriggered + ", cronExpression="
+				+ cronExpression + ", timeZoneId=" + timeZoneId + "]";
 	}
 
 }

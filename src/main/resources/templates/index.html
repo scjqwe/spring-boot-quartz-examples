@@ -10,14 +10,14 @@
 <body>
 	<!-- 搜索栏 -->
 	<div class="searchBar" style="margin: 10px 0 0 10px">
-		任务名：
+		任务类名：
 		<div class="layui-inline">
-			<input class="layui-input" name="taskName" id="taskName"
+			<input class="layui-input" name="jobClassName" id="jobClassName"
 				autocomplete="on">
 		</div>
-		触发器名：
+		任务组名：
 		<div class="layui-inline">
-			<input class="layui-input" name="triggerName" id="triggerName"
+			<input class="layui-input" name="jobGroupName" id="jobGroupName"
 				autocomplete="on">
 		</div>
 		<button class="layui-btn" data-type="reload">搜索</button>
@@ -47,9 +47,9 @@
 		<div class="layui-form-item">
 			<label class="layui-form-label">Cron表达式</label>
 			<div class="layui-input-inline">
-				<input type="text" name="cronExpression" required style="width: 240px"
-					lay-verify="required" placeholder="Cron表达式" autocomplete="off"
-					class="layui-input">
+				<input type="text" name="cronExpression" required
+					style="width: 240px" lay-verify="required" placeholder="Cron表达式"
+					autocomplete="off" class="layui-input">
 			</div>
 		</div>
 		<div class="layui-form-item">
@@ -59,12 +59,44 @@
 			</div>
 		</div>
 	</form>
+	
+	<!-- 编辑任务 -->
+	<form class="layui-form" id="edit-form" action="/job/reschedule" method="Post" style="display: none;">
+		<div class="layui-form-item" style="margin-top: 5px">
+			<label class="layui-form-label">任务类名</label>
+			<div class="layui-input-block">
+				<input type="text" id="jobClassName" name="jobClassName" style="width: 240px"
+					lay-verify="required" placeholder="请输入任务类名"
+					class="layui-input" readonly>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">任务组</label>
+			<div class="layui-input-inline">
+				<input type="text" id="jobGroupName" name="jobGroupName" style="width: 240px"
+					lay-verify="required" placeholder="任务组"
+					class="layui-input" readonly>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">Cron表达式</label>
+			<div class="layui-input-inline">
+				<input type="text" id="cronExpression" name="cronExpression" required
+					style="width: 240px" lay-verify="required" placeholder="Cron表达式"
+					autocomplete="on" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<button class="layui-btn" lay-filter="*">立即提交</button>
+			</div>
+		</div>
+	</form>
 
 	<!-- 头部工具栏 -->
 	<script type="text/html" id="toolbar">
 		<div class="layui-btn-container">
 			<button class="layui-btn layui-btn-sm" lay-event="add">新增任务</button>
-			<button class="layui-btn layui-btn-sm" lay-event="batchDel">批量删除</button>
 		</div>
 	</script>
 
@@ -89,9 +121,6 @@
 				cellMinWidth : 80, //全局定义常规单元格的最小宽度，layui 2.2.1 新增
 				title : '任务列表',
 				cols : [ [ {
-					type : 'checkbox',
-					fixed : 'left'
-				}, {
 					field : 'jobName',
 					title : '任务名称',
 					edit : 'text',
@@ -116,11 +145,16 @@
 					edit : 'text',
 					align : 'center'
 				}, {
+					field : 'triggerState',
+					title : '触发器状态',
+					edit : 'text',
+					align : 'center'
+				},  {
 					field : 'cronExpression',
 					title : '表达式',
 					edit : 'text',
 					align : 'center'
-				}, {
+				},{
 					field : 'timeZoneId',
 					title : '时区',
 					edit : 'text',
@@ -133,7 +167,7 @@
 				} ] ],
 				page : true,
 				response : {
-					statusCode : 200
+					statusCode : 1
 				}
 			});
 
@@ -142,43 +176,28 @@
 				console.log(obj)
 				var checkStatus = table.checkStatus(obj.config.id);
 				switch (obj.event) {
-				case 'add':
-					addJob();
-					break;
-				case 'batchDel':
-					var data = checkStatus.data;
-					layer.msg('选中了：' + data.length + ' 个');
-					break;
+					case 'add':
+						addJob();
+						break;
 				}
-				;
-			});
+			})
 
 			//监听行工具事件
 			table.on('tool(jobList)', function(obj) {
-				console.log(obj)
 				var data = obj.data;
 				if (obj.event === 'pause') {
 					layer.confirm('确定暂停任务吗？', function(index) {
-						obj.update({});
-						layer.close(index);
+						updateJob('/job/pause', {jobClassName:data.jobClassName, jobGroupName:data.jobGroup});
 					});
 				} else if (obj.event === 'resume') {
 					layer.confirm('确定恢复任务吗？', function(index) {
-						obj.update({});
-						layer.close(index);
+						updateJob('/job/resume', {jobClassName:data.jobClassName, jobGroupName:data.jobGroup});
 					});
 				} else if (obj.event === 'reschedule') {
-					layer.prompt({
-						formType : 2,
-						value : data.email
-					}, function(value, index) {
-						obj.update({});
-						layer.close(index);
-					});
+					editJob(data);
 				} else if (obj.event === 'delete') {
 					layer.confirm('确定删除任务吗？', function(index) {
-						obj.del();
-						layer.close(index);
+						updateJob('/job/delete', {jobClassName:data.jobClassName, jobGroupName:data.jobGroup});
 					});
 				}
 			});
@@ -186,20 +205,7 @@
 			//搜索事件
 			var $ = layui.$, active = {
 				reload : function() {
-					var taskName = $('#taskName');
-
-					//执行重载
-					table.reload('reload', {
-						page : {
-							curr : 1
-						//重新从第 1 页开始
-						},
-						where : {
-							key : {
-								taskName : taskName.val()
-							}
-						}
-					});
+					reload();
 				}
 			};
 			$('.searchBar .layui-btn').on('click', function() {
@@ -208,6 +214,38 @@
 			});
 		});
 
+		//更新任务
+		function updateJob(url, data) {
+			$.ajax({
+				url : url,
+				type : 'post',
+				data : data,
+				beforeSend : function() {
+					this.layerIndex = layer.load(0, {
+						shade : [ 0.5, '#393D49' ]
+					});
+				},
+				success : function(data) {
+					if (data.code == 0) {
+						layer.msg(data.msg, {
+							icon : 5
+						});
+					} else {
+						layer.msg(data.msg, {
+							icon : 6,
+							time : 1000
+						}, function() {
+							reload();
+						});
+					}
+				},
+				complete : function() {
+					layer.close(this.layerIndex);
+				},
+			});
+		}
+
+		//添加任务
 		function addJob() {
 			layer.open({
 				type : 1,
@@ -217,6 +255,42 @@
 				area : [ '400px', '300px' ],
 				content : $("#add-form"),
 				success : function(index, layero) {
+				}
+			});
+		}
+		
+		//编辑任务
+		function editJob(data) {
+			layer.open({
+				type : 1,
+				title : "修改任务",
+				shadeClose : true,
+				shift : 2,
+				closeBtn : 1,
+				area : [ '400px', '300px' ],
+				content : $("#edit-form"),
+				success : function(index, layero) {
+					//初始化
+					$("#edit-form #jobClassName").val(data.jobClassName);
+					$("#edit-form #jobGroupName").val(data.jobGroup);
+					$("#edit-form #cronExpression").val(data.cronExpression);
+				}
+			});
+		}
+
+		//重载表格
+		function reload() {
+			var table = layui.table;
+			var jobClassName = $('.searchBar #jobClassName');
+			var jobGroupName = $('.searchBar #jobGroupName');
+			table.reload('reload', {
+				page : {
+					curr : 1
+				//重新从第 1 页开始
+				},
+				where : {
+					jobClassName : jobClassName.val(),
+					jobGroupName : jobGroupName.val()
 				}
 			});
 		}
