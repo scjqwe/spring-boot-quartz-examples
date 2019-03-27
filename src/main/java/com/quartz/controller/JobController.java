@@ -59,13 +59,10 @@ public class JobController {
 	@PostMapping(value = "/add")
 	public String addJob(@RequestParam(value = "jobClassName") String jobClassName, @RequestParam(value = "jobGroupName") String jobGroupName,
 			@RequestParam(value = "cronExpression") String cronExpression) throws Exception {
-
-		// 启动调度器
-		scheduler.start();
-
 		// 构建job信息
 		JobDetail jobDetail = JobBuilder.newJob(getClass(jobClassName).getClass()).withIdentity(jobClassName, jobGroupName).build();
-
+		jobDetail.isConcurrentExectionDisallowed();
+		
 		// 表达式调度构建器(即任务执行的时间)
 		CronScheduleBuilder scheduleBuilder = CronScheduleBuilder.cronSchedule(cronExpression);
 
